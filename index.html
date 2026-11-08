@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tintaverso | Universo de Historias Orgánicas</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sepia: {
+                            50: '#FAF6EE',
+                            100: '#F4ECE1',
+                            200: '#E8DBCE',
+                            700: '#5C4A3E',
+                            800: '#43342B',
+                            900: '#2C221B',
+                        },
+                        darkroom: {
+                            800: '#1A1817',
+                            900: '#121110',
+                            950: '#0B0A0A'
+                        },
+                        accent: {
+                            amber: '#C87D55',
+                            gold: '#D4AF37',
+                            burgundy: '#7A2E39',
+                            sage: '#5F7A65',
+                            ink: '#2B1E3A'
+                        }
+                    },
+                    fontFamily: {
+                        title: ['Cinzel', 'serif'],
+                        body: ['Lora', 'serif'],
+                        ui: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Theme Definitions */
+        .theme-sepia {
+            background-color: #FAF6EE;
+            color: #2C221B;
+        }
+        .theme-sepia .card-bg { background-color: #F4ECE1; }
+        .theme-sepia .header-bg { background-color: #E8DBCE; }
+        .theme-sepia .border-custom { border-color: #D4C3B3; }
+
+        .theme-dark {
+            background-color: #121110;
+            color: #E2D9D0;
+        }
+        .theme-dark .card-bg { background-color: #1A1817; }
+        .theme-dark .header-bg { background-color: #23201E; }
+        .theme-dark .border-custom { border-color: #332F2C; }
+
+        .theme-light {
+            background-color: #FFFFFF;
+            color: #1F2937;
+        }
+        .theme-light .card-bg { background-color: #F9FAFB; }
+        .theme-light .header-bg { background-color: #F3F4F6; }
+        .theme-light .border-custom { border-color: #E5E7EB; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(150, 150, 150, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(150, 150, 150, 0.5);
+        }
+
+        /* Animation utilities */
+        .transition-theme {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+    </style>
+</head>
+<body class="theme-sepia font-ui transition-theme min-h-screen flex flex-col selection:bg-accent-amber selection:text-white" id="appBody">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 header-bg border-b border-custom backdrop-blur-md bg-opacity-90 shadow-sm transition-theme">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+            
+            <!-- Brand Logo / Name -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('library')">
+                <div class="w-10 h-10 rounded-lg bg-accent-burgundy text-amber-200 flex items-center justify-center font-title text-xl font-bold shadow-md border border-accent-gold/40">
+                    <i class="fa-solid fa-feather-pointed"></i>
+                </div>
+                <div>
+                    <h1 class="font-title font-bold text-xl leading-tight tracking-widest text-accent-burgundy dark:text-amber-200">TINTAVERSO</h1>
+                    <p class="text-[10px] opacity-75 font-body italic tracking-wide hidden sm:block">Refugio de Fanfics & Escrita Orgánica</p>
+                </div>
+            </div>
+
+            <!-- Global Search Bar -->
+            <div class="flex-1 max-w-md hidden md:block">
+                <div class="relative">
+                    <input type="text" id="searchInput" onkeyup="filterStories()" placeholder="Buscar por título, autor, fandom o etiqueta..." class="w-full pl-10 pr-4 py-1.5 rounded-full text-sm bg-black/5 dark:bg-white/10 border border-custom focus:outline-none focus:ring-2 focus:ring-accent-amber transition-all">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-xs opacity-50"></i>
+                </div>
+            </div>
+
+            <!-- Controls & Action Buttons -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Theme Selectors -->
+                <div class="flex items-center bg-black/5 dark:bg-white/5 p-1 rounded-full border border-custom text-xs">
+                    <button onclick="setTheme('sepia')" title="Modo Sepia / Cálido" class="px-2 py-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-all"><i class="fa-solid fa-book-open text-amber-700 dark:text-amber-400"></i></button>
+                    <button onclick="setTheme('light')" title="Modo Claro" class="px-2 py-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-all"><i class="fa-solid fa-sun text-yellow-500"></i></button>
+                    <button onclick="setTheme('dark')" title="Modo Noche" class="px-2 py-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-all"><i class="fa-solid fa-moon text-indigo-400"></i></button>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <button onclick="switchView('library')" class="px-3 py-1.5 rounded-lg font-medium text-sm hover:bg-black/5 dark:hover:bg-white/10 transition-all flex items-center space-x-1">
+                    <i class="fa-solid fa-books opacity-75"></i>
+                    <span class="hidden sm:inline">Biblioteca</span>
+                </button>
+
+                <button onclick="switchView('publish')" class="bg-accent-amber hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium shadow transition-all flex items-center space-x-1">
+                    <i class="fa-solid fa-pen-nib"></i>
+                    <span>Publicar</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="px-4 pb-3 md:hidden">
+            <div class="relative">
+                <input type="text" id="mobileSearchInput" onkeyup="filterStoriesMobile()" placeholder="Buscar título, fandom o autor..." class="w-full pl-9 pr-4 py-1.5 rounded-full text-sm bg-black/5 dark:bg-white/10 border border-custom focus:outline-none focus:ring-2 focus:ring-accent-amber">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs opacity-50"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- VIEW 1: LIBRARY / DIRECTORY VIEW -->
+        <section id="libraryView" class="space-y-6">
+            <!-- Welcome Banner -->
+            <div class="relative rounded-2xl p-6 sm:p-8 card-bg border border-custom overflow-hidden shadow-sm">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-accent-burgundy/15 text-accent-burgundy dark:text-amber-300 uppercase tracking-widest font-title">Colectivo Independiente</span>
+                    <h2 class="font-title text-2xl sm:text-3xl font-bold mt-2">Bienvenida al Tintaverso</h2>
+                    <p class="font-body text-sm sm:text-base opacity-80 mt-2">Nuestra isla digital libre de textos por IA y anuncios. Un catálogo artesanal con ambientación musical, ilustraciones y lectura cómoda para nuestro grupo de escritoras.</p>
+                </div>
+                <div class="absolute -right-10 -bottom-10 opacity-10 font-title text-9xl pointer-events-none select-none text-accent-burgundy">
+                    <i class="fa-solid fa-book-journal-whills"></i>
+                </div>
+            </div>
+
+            <!-- Tags Filter Bar -->
+            <div class="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-none" id="fandomFilters">
+                <button onclick="filterByFandom('all')" class="filter-btn active-filter px-3 py-1 rounded-full text-xs font-medium bg-accent-amber text-white shadow-sm whitespace-nowrap">Todos los Fandoms</button>
+                <button onclick="filterByFandom('Original')" class="filter-btn px-3 py-1 rounded-full text-xs font-medium border border-custom hover:bg-black/5 dark:hover:bg-white/10 whitespace-nowrap">Original</button>
+                <button onclick="filterByFandom('Anime/Manga')" class="filter-btn px-3 py-1 rounded-full text-xs font-medium border border-custom hover:bg-black/5 dark:hover:bg-white/10 whitespace-nowrap">Anime & Manga</button>
+                <button onclick="filterByFandom('Fantasía / Sci-Fi')" class="filter-btn px-3 py-1 rounded-full text-xs font-medium border border-custom hover:bg-black/5 dark:hover:bg-white/10 whitespace-nowrap">Fantasía & Sci-Fi</button>
+                <button onclick="filterByFandom('Romance')" class="filter-btn px-3 py-1 rounded-full text-xs font-medium border border-custom hover:bg-black/5 dark:hover:bg-white/10 whitespace-nowrap">Romance / Slice of Life</button>
+            </div>
+
+            <!-- Stories Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="storiesGrid">
+                <!-- Dynamically populated via JavaScript -->
+            </div>
+        </section>
+
+        <!-- VIEW 2: CHAPTER READER VIEW -->
+        <section id="readerView" class="hidden space-y-6 max-w-4xl mx-auto">
+            
+            <!-- Floating Navigation & Toolbar -->
+            <div class="sticky top-20 z-30 card-bg border border-custom rounded-2xl p-3 shadow-md backdrop-blur-md bg-opacity-95 flex flex-wrap items-center justify-between gap-3">
+                <button onclick="switchView('library')" class="text-xs font-medium hover:text-accent-amber flex items-center space-x-1.5 px-2 py-1">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    <span>Volver a Biblioteca</span>
+                </button>
+
+                <!-- Reader Customization Controls -->
+                <div class="flex items-center space-x-3 text-xs">
+                    <!-- Font Family Switcher -->
+                    <div class="flex items-center space-x-1 border-r border-custom pr-3">
+                        <button onclick="setFontFamily('serif')" id="serifBtn" class="px-2 py-1 rounded font-body font-bold border border-accent-amber">Serif</button>
+                        <button onclick="setFontFamily('sans')" id="sansBtn" class="px-2 py-1 rounded font-ui">Sans</button>
+                    </div>
+
+                    <!-- Font Size Controls -->
+                    <div class="flex items-center space-x-1 border-r border-custom pr-3">
+                        <button onclick="adjustFontSize(-1)" class="w-7 h-7 rounded hover:bg-black/5 dark:hover:bg-white/10 font-bold" title="Disminuir Letra">A-</button>
+                        <span id="fontSizeDisplay" class="font-mono text-xs w-6 text-center">18px</span>
+                        <button onclick="adjustFontSize(1)" class="w-7 h-7 rounded hover:bg-black/5 dark:hover:bg-white/10 font-bold" title="Aumentar Letra">A+</button>
+                    </div>
+
+                    <!-- Line Spacing Control -->
+                    <button onclick="toggleLineHeight()" class="px-2 py-1 rounded hover:bg-black/5 dark:hover:bg-white/10" title="Interlineado">
+                        <i class="fa-solid fa-align-left"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Story Info Header -->
+            <div class="card-bg border border-custom rounded-2xl p-6 sm:p-8 space-y-4 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span id="readerFandom" class="px-3 py-1 rounded-full text-xs font-semibold bg-accent-amber/15 text-accent-amber">Fandom</span>
+                    <div class="text-xs opacity-75 flex items-center space-x-4">
+                        <span><i class="fa-regular fa-clock mr-1"></i><span id="readerReadTime">5 min</span></span>
+                        <span><i class="fa-regular fa-file-lines mr-1"></i><span id="readerWordCount">1,200</span> palabras</span>
+                    </div>
+                </div>
+
+                <h1 id="readerTitle" class="font-title text-2xl sm:text-4xl font-bold leading-tight">Título de la Historia</h1>
+                
+                <div class="flex items-center justify-between border-t border-b border-custom py-3 text-sm">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-accent-amber/20 text-accent-amber flex items-center justify-center font-bold font-title">
+                            <span id="readerAuthorAvatar">A</span>
+                        </div>
+                        <div>
+                            <p class="font-semibold text-xs sm:text-sm" id="readerAuthor">Por Autora</p>
+                            <p class="text-xs opacity-60">Publicado el <span id="readerDate">2026</span></p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="giveKudos()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all text-xs font-semibold">
+                            <i class="fa-solid fa-heart"></i>
+                            <span id="kudosCount">24</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Warnings & Tags -->
+                <div class="text-xs space-y-2">
+                    <div class="flex items-start space-x-2">
+                        <span class="font-bold text-red-500/90 uppercase tracking-wide shrink-0"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Advertencias:</span>
+                        <span id="readerWarnings" class="opacity-80">Ninguna en particular.</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5" id="readerTags">
+                        <!-- Tags inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIO PLAYER EMBED (WATTPAD RETRO FEATURE) -->
+            <div id="audioPlayerContainer" class="card-bg border border-custom rounded-2xl p-4 shadow-sm space-y-3">
+                <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-accent-amber animate-pulse"></span>
+                        <span class="font-semibold text-accent-amber uppercase tracking-wider"><i class="fa-solid fa-music mr-1"></i> Banda Sonora / Ambiente Sugerido</span>
+                    </div>
+                    <span id="audioTrackTitle" class="opacity-75 font-mono italic">Café Lluvioso & Piano Nocturno</span>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleAudioPlay()" id="audioPlayBtn" class="w-10 h-10 rounded-full bg-accent-amber hover:bg-amber-700 text-white flex items-center justify-center shadow transition-all shrink-0">
+                        <i class="fa-solid fa-play" id="audioPlayIcon"></i>
+                    </button>
+                    
+                    <div class="flex-1 space-y-1">
+                        <div class="w-full bg-black/10 dark:bg-white/10 h-2 rounded-full overflow-hidden cursor-pointer" onclick="seekAudio(event)">
+                            <div id="audioProgressBar" class="bg-accent-amber h-full w-0 transition-all duration-200"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] opacity-60 font-mono">
+                            <span id="audioCurrentTime">0:00</span>
+                            <span id="audioDuration">3:45</span>
+                        </div>
+                    </div>
+
+                    <div class="hidden sm:flex items-center space-x-2 shrink-0 text-xs">
+                        <i class="fa-solid fa-volume-high opacity-60"></i>
+                        <input type="range" min="0" max="1" step="0.1" value="0.7" onchange="setVolume(this.value)" class="w-16 accent-accent-amber cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Simulated Audio Player logic -->
+                <audio id="htmlAudioPlayer" preload="none" src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"></audio>
+            </div>
+
+            <!-- CHAPTER READING CONTENT BODY -->
+            <article id="readerBody" class="card-bg border border-custom rounded-2xl p-6 sm:p-12 shadow-sm font-body leading-relaxed space-y-6 text-justify text-lg transition-all">
+                <!-- Chapter text loaded here dynamically -->
+            </article>
+
+            <!-- Chapter Footer & Navigation -->
+            <div class="flex items-center justify-between pt-4">
+                <button class="px-4 py-2 rounded-xl border border-custom text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-all opacity-50 cursor-not-allowed">
+                    <i class="fa-solid fa-chevron-left mr-1"></i> Capítulo Anterior
+                </button>
+
+                <div class="text-xs font-semibold opacity-75">
+                    Capítulo 1 de 1
+                </div>
+
+                <button class="px-4 py-2 rounded-xl border border-custom text-xs font-semibold hover:bg-black/5 dark:hover:bg-white/10 transition-all opacity-50 cursor-not-allowed">
+                    Siguiente Capítulo <i class="fa-solid fa-chevron-right ml-1"></i>
+                </button>
+            </div>
+
+            <!-- COMMENTS & KUDOS SECTION -->
+            <div class="card-bg border border-custom rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <h3 class="font-title text-xl font-bold flex items-center space-x-2">
+                    <i class="fa-regular fa-comments text-accent-amber"></i>
+                    <span>Comentarios de Lectoras</span>
+                </h3>
+
+                <!-- New Comment Box -->
+                <div class="space-y-3">
+                    <input type="text" id="commentAuthor" placeholder="Tu Apodo / Nombre" class="w-full sm:w-1/2 px-4 py-2 text-xs rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:outline-none focus:ring-2 focus:ring-accent-amber">
+                    <textarea id="commentText" rows="3" placeholder="Deja un comentario con cariño para la autora..." class="w-full px-4 py-3 text-sm rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:outline-none focus:ring-2 focus:ring-accent-amber resize-none"></textarea>
+                    <button onclick="postComment()" class="bg-accent-amber hover:bg-amber-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow transition-all">
+                        Publicar Comentario
+                    </button>
+                </div>
+
+                <!-- Comment List -->
+                <div class="space-y-4 pt-4 border-t border-custom" id="commentsList">
+                    <!-- Comments generated dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: PUBLISH / ADMIN EDIT PANEL -->
+        <section id="publishView" class="hidden max-w-3xl mx-auto space-y-6">
+            <div class="card-bg border border-custom rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
+                <div>
+                    <h2 class="font-title text-2xl font-bold flex items-center space-x-2">
+                        <i class="fa-solid fa-feather text-accent-amber"></i>
+                        <span>Publicar Nueva Historia o Capítulo</span>
+                    </h2>
+                    <p class="text-xs opacity-75 mt-1 font-body">Añade tu historia al catálogo colectivo de forma sencilla y directa.</p>
+                </div>
+
+                <form id="publishForm" onsubmit="handlePublish(event)" class="space-y-4 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="font-bold opacity-90">Título de la Historia</label>
+                            <input type="text" id="pubTitle" required placeholder="Ej: Ecos entre la Bruma" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="font-bold opacity-90">Autora / Seudónimo</label>
+                            <input type="text" id="pubAuthor" required placeholder="Ej: Clara_Moon" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="font-bold opacity-90">Fandom / Categoría</label>
+                            <select id="pubFandom" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                                <option value="Original">Original</option>
+                                <option value="Anime/Manga">Anime & Manga</option>
+                                <option value="Fantasía / Sci-Fi">Fantasía & Sci-Fi</option>
+                                <option value="Romance">Romance / Slice of Life</option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="font-bold opacity-90">Etiquetas (separadas por comas)</label>
+                            <input type="text" id="pubTags" placeholder="Slow Burn, Au Moderno, Angst" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="font-bold opacity-90">URL de Imagen de Portada (Opcional)</label>
+                            <input type="url" id="pubCover" placeholder="https://ejemplo.com/portada.jpg" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="font-bold opacity-90">URL Pista de Audio MP3 / Ambiente (Opcional)</label>
+                            <input type="url" id="pubAudio" placeholder="https://cdn.pixabay.com/audio/ejemplo.mp3" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="font-bold opacity-90">Advertencias de Contenido (Content Warnings)</label>
+                        <input type="text" id="pubWarnings" placeholder="Ej: Muerte de personaje secundario, spoilers del cap 5" class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="font-bold opacity-90">Sinopsis Corta</label>
+                        <textarea id="pubSummary" rows="2" required placeholder="Resumen breve para mostrar en la tarjeta de la biblioteca..." class="w-full px-4 py-2 rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none resize-none"></textarea>
+                    </div>
+
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="font-bold opacity-90">Contenido del Capítulo 1</label>
+                            <span class="opacity-60 text-[10px]">Acepta saltos de línea e imágenes HTML</span>
+                        </div>
+                        <textarea id="pubContent" rows="12" required placeholder="Escribe o pega aquí el texto de tu historia..." class="w-full px-4 py-3 font-body text-sm rounded-xl bg-black/5 dark:bg-white/10 border border-custom focus:ring-2 focus:ring-accent-amber focus:outline-none leading-relaxed"></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-custom">
+                        <button type="button" onclick="switchView('library')" class="px-4 py-2 rounded-xl border border-custom font-semibold hover:bg-black/5 dark:hover:bg-white/10">Cancelar</button>
+                        <button type="submit" class="bg-accent-amber hover:bg-amber-700 text-white px-6 py-2 rounded-xl font-semibold shadow transition-all">
+                            Publicar Historia
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="header-bg border-t border-custom py-6 mt-12 transition-theme">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs opacity-75 space-y-2">
+            <p class="font-title font-semibold tracking-widest">TINTAVERSO • COLECTIVO DE ESCRITORAS</p>
+            <p class="font-body italic">Un espacio seguro para la literatura independiente y fanfiction hecho a mano.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Initial Mock Database updated with Tintaverso branding context
+        let stories = [
+            {
+                id: 1,
+                title: "Bajo la Sombrilla de Papel",
+                author: "Lucía_Serafín",
+                fandom: "Romance",
+                tags: ["Slow Burn", "Japón Feudal", "Arte", "Atmosférico"],
+                warnings: "Ninguna",
+                summary: "En una Kioto envuelta en bruma de otoño, dos ilustradores rivales se ven obligados a compartir taller durante la temporada de lluvias.",
+                wordCount: 3450,
+                readTime: "12 min",
+                likes: 42,
+                cover: "https://images.unsplash.com/photo-1528164344705-47542687990d?auto=format&fit=crop&w=600&q=80",
+                audioUrl: "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3",
+                audioTitle: "Lluvia suave & Cítaras",
+                comments: [
+                    { author: "Elena", text: "¡Me encantó la descripción del olor a tinta y lluvia! Qué hermosa ambientación.", date: "Hace 2 días" },
+                    { author: "Mariana_R", text: "El reproductor de fondo mientras leo le da un toque mágico.", date: "Hace 1 día" }
+                ],
+                content: `
+                    <p class="first-letter:text-4xl first-letter:font-title first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-accent-burgundy">La lluvia sobre el tejado de madera no era un sonido nuevo, pero esa tarde sonaba diferente. Tenía la cadencia pausada de las cosas que no tienen prisa por terminar.</p>
+                    
+                    <p>Kenji mojó el pincel en la tinta de pino, dejando que la sombra sobre el papel de arroz hablara antes que sus palabras. Al otro lado del separador de papel, la respiración tranquila de Ren marcaba el ritmo de la estancia.</p>
+
+                    <div class="my-8 text-center">
+                        <img src="https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=800&q=80" alt="Pincel y Tinta" class="rounded-xl mx-auto max-h-80 object-cover border border-custom shadow-md">
+                        <span class="text-xs opacity-60 font-body italic mt-2 block">Estudio de ilustración tradicional, grabado en madera.</span>
+                    </div>
+
+                    <p>—¿Vas a seguir fingiendo que ese trazo no está desviado dos milímetros hacia el norte? —preguntó Ren sin levantar la vista de su propio grabado.</p>
+
+                    <p>Kenji sonrió apenas, sosteniendo la respiración. Era la tercera vez en la semana que competían en silencio por quién lograba la línea más pura. Sin embargo, ninguno de los dos quería realmente ganar si eso significaba recoger las herramientas e irse.</p>
+                `
+            },
+            {
+                id: 2,
+                title: "Nebulosa en el Jardín",
+                author: "Astra_V",
+                fandom: "Fantasía / Sci-Fi",
+                tags: ["Sci-Fi Suave", "Botanica Espacial", "Confort"],
+                warnings: "Ninguna",
+                summary: "Cuidar plantas luminosas en una estación espacial abandonada era un trabajo solitario, hasta que una señal interceptada trajo consigo un misterio.",
+                wordCount: 4120,
+                readTime: "15 min",
+                likes: 38,
+                cover: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+                audioUrl: "https://cdn.pixabay.com/download/audio/2021/09/06/audio_8b27df7a59.mp3?filename=ambient-piano-amp-strings-10711.mp3",
+                audioTitle: "Sintetizador Cósmico & Eco",
+                comments: [],
+                content: `
+                    <p class="first-letter:text-4xl first-letter:font-title first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-accent-amber">Las esporas de la Selva Azul flotaban en la gravedad reducida como pequeñas luciérnagas de cristal.</p>
+                    <p>Nora ajustó los sensores térmicos del vivero tres. Afuera, la inmensidad del sector 9 reflejaba tonos violetas sobre el cristal reforzado de la nave.</p>
+                `
+            },
+            {
+                id: 3,
+                title: "Cartas a la Medianoche",
+                author: "Clara_Moon",
+                fandom: "Original",
+                tags: ["Epistolar", "Amistad Profunda", "Nostalgia"],
+                warnings: "Mención ligera de duelo",
+                summary: "Una correspondencia anónima dejada en el hueco de un árbol centenario en el patio de la facultad de filosofía.",
+                wordCount: 2800,
+                readTime: "9 min",
+                likes: 56,
+                cover: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=600&q=80",
+                audioUrl: "https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a82d02.mp3?filename=soft-piano-background-10996.mp3",
+                audioTitle: "Piano Solo Nocturno",
+                comments: [],
+                content: `
+                    <p class="first-letter:text-4xl first-letter:font-title first-letter:font-bold first-letter:float-left first-letter:mr-3 first-letter:text-accent-amber">Querido desconocido del sobre azul:</p>
+                    <p>Hoy las hojas del roble comenzaron a caer. Si lees esto antes de la clase de las ocho, sabrás que dejé el libro que me pediste junto a la biblioteca.</p>
+                `
+            }
+        ];
+
+        let currentStory = null;
+        let fontSize = 18;
+        let isPlay = false;
+
+        // Initialize App
+        window.onload = function() {
+            renderStoriesGrid(stories);
+            setTheme('sepia');
+        };
+
+        // Theme Switcher
+        function setTheme(theme) {
+            const body = document.getElementById('appBody');
+            body.classList.remove('theme-sepia', 'theme-dark', 'theme-light');
+            body.classList.add(`theme-${theme}`);
+        }
+
+        // View Router
+        function switchView(viewName) {
+            document.getElementById('libraryView').classList.add('hidden');
+            document.getElementById('readerView').classList.add('hidden');
+            document.getElementById('publishView').classList.add('hidden');
+
+            if (viewName === 'library') {
+                document.getElementById('libraryView').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (viewName === 'reader') {
+                document.getElementById('readerView').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (viewName === 'publish') {
+                document.getElementById('publishView').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Render Stories Library Grid
+        function renderStoriesGrid(data) {
+            const grid = document.getElementById('storiesGrid');
+            grid.innerHTML = '';
+
+            if (data.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-12 opacity-60">
+                        <i class="fa-solid fa-book-open text-4xl mb-3"></i>
+                        <p>No se encontraron historias que coincidan con la búsqueda.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            data.forEach(story => {
+                const card = document.createElement('div');
+                card.className = "card-bg border border-custom rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group";
+                
+                const tagsHtml = story.tags.map(t => `<span class="px-2 py-0.5 rounded-full text-[10px] bg-black/5 dark:bg-white/10 font-medium">${t}</span>`).join(' ');
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Cover Image Placeholder -->
+                        <div class="h-44 w-full relative overflow-hidden bg-black/10">
+                            <img src="${story.cover || 'https://placehold.co/600x300/e8dbce/43342b?text=Historia'}" alt="${story.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[10px] font-semibold">
+                                ${story.fandom}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-5 space-y-3">
+                            <h3 class="font-title text-xl font-bold line-clamp-1 group-hover:text-accent-amber transition-colors">${story.title}</h3>
+                            
+                            <div class="flex items-center space-x-2 text-xs opacity-75">
+                                <i class="fa-solid fa-pen-nib text-accent-amber text-[10px]"></i>
+                                <span>Por <strong>${story.author}</strong></span>
+                            </div>
+
+                            <p class="font-body text-xs line-clamp-3 opacity-80 leading-relaxed">${story.summary}</p>
+
+                            <div class="flex flex-wrap gap-1 pt-1">
+                                ${tagsHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="px-5 py-3 border-t border-custom flex items-center justify-between text-xs opacity-75">
+                        <div class="flex items-center space-x-3">
+                            <span><i class="fa-regular fa-file-lines mr-1"></i>${story.wordCount} words</span>
+                            <span><i class="fa-solid fa-heart text-red-500/80 mr-1"></i>${story.likes}</span>
+                        </div>
+                        <button onclick="openReader(${story.id})" class="text-accent-amber hover:underline font-semibold flex items-center space-x-1">
+                            <span>Leer</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Open Reader View with selected story
+        function openReader(storyId) {
+            const story = stories.find(s => s.id === storyId);
+            if (!story) return;
+
+            currentStory = story;
+
+            // Populate Metadata
+            document.getElementById('readerTitle').innerText = story.title;
+            document.getElementById('readerAuthor').innerText = `Por ${story.author}`;
+            document.getElementById('readerAuthorAvatar').innerText = story.author.charAt(0).toUpperCase();
+            document.getElementById('readerFandom').innerText = story.fandom;
+            document.getElementById('readerReadTime').innerText = story.readTime || '10 min';
+            document.getElementById('readerWordCount').innerText = story.wordCount.toLocaleString();
+            document.getElementById('readerWarnings').innerText = story.warnings || 'Ninguna';
+            document.getElementById('kudosCount').innerText = story.likes;
+            document.getElementById('audioTrackTitle').innerText = story.audioTitle || 'Pista de Ambiente';
+
+            // Populate Tags
+            const tagsContainer = document.getElementById('readerTags');
+            tagsContainer.innerHTML = story.tags.map(t => `<span class="px-2 py-0.5 rounded-full text-[10px] bg-accent-amber/10 text-accent-amber font-medium">#${t}</span>`).join('');
+
+            // Populate Body
+            document.getElementById('readerBody').innerHTML = story.content;
+
+            // Audio Setup
+            const audio = document.getElementById('htmlAudioPlayer');
+            if (story.audioUrl) {
+                audio.src = story.audioUrl;
+                document.getElementById('audioPlayerContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('audioPlayerContainer').classList.add('hidden');
+            }
+            pauseAudio();
+
+            // Render Comments
+            renderComments();
+
+            // Switch to Reader View
+            switchView('reader');
+        }
+
+        // Font Adjusters for Reader
+        function adjustFontSize(delta) {
+            fontSize = Math.max(14, Math.min(26, fontSize + delta));
+            const readerBody = document.getElementById('readerBody');
+            readerBody.style.fontSize = `${fontSize}px`;
+            document.getElementById('fontSizeDisplay').innerText = `${fontSize}px`;
+        }
+
+        function setFontFamily(type) {
+            const readerBody = document.getElementById('readerBody');
+            const serifBtn = document.getElementById('serifBtn');
+            const sansBtn = document.getElementById('sansBtn');
+
+            if (type === 'serif') {
+                readerBody.classList.remove('font-ui');
+                readerBody.classList.add('font-body');
+                serifBtn.classList.add('border-accent-amber', 'font-bold');
+                sansBtn.classList.remove('border-accent-amber', 'font-bold');
+            } else {
+                readerBody.classList.remove('font-body');
+                readerBody.classList.add('font-ui');
+                sansBtn.classList.add('border-accent-amber', 'font-bold');
+                serifBtn.classList.remove('border-accent-amber', 'font-bold');
+            }
+        }
+
+        function toggleLineHeight() {
+            const readerBody = document.getElementById('readerBody');
+            if (readerBody.classList.contains('leading-relaxed')) {
+                readerBody.classList.remove('leading-relaxed');
+                readerBody.classList.add('leading-loose');
+            } else {
+                readerBody.classList.remove('leading-loose');
+                readerBody.classList.add('leading-relaxed');
+            }
+        }
+
+        // Audio Player Controls
+        function toggleAudioPlay() {
+            const audio = document.getElementById('htmlAudioPlayer');
+            const icon = document.getElementById('audioPlayIcon');
+            
+            if (audio.paused) {
+                audio.play().then(() => {
+                    icon.classList.remove('fa-play');
+                    icon.classList.add('fa-pause');
+                }).catch(e => console.log('Audio playback prevented or unsupported link.'));
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function pauseAudio() {
+            const audio = document.getElementById('htmlAudioPlayer');
+            const icon = document.getElementById('audioPlayIcon');
+            audio.pause();
+            icon.classList.remove('fa-pause');
+            icon.classList.add('fa-play');
+        }
+
+        const audio = document.getElementById('htmlAudioPlayer');
+        audio.ontimeupdate = function() {
+            if (!audio.duration) return;
+            const progress = (audio.currentTime / audio.duration) * 100;
+            document.getElementById('audioProgressBar').style.width = `${progress}%`;
+            
+            document.getElementById('audioCurrentTime').innerText = formatTime(audio.currentTime);
+            document.getElementById('audioDuration').innerText = formatTime(audio.duration);
+        };
+
+        function seekAudio(event) {
+            const bar = event.currentTarget;
+            const clickX = event.offsetX;
+            const width = bar.clientWidth;
+            const duration = audio.duration;
+            if (duration) {
+                audio.currentTime = (clickX / width) * duration;
+            }
+        }
+
+        function setVolume(val) {
+            audio.volume = val;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // Kudos / Likes
+        function giveKudos() {
+            if (!currentStory) return;
+            currentStory.likes += 1;
+            document.getElementById('kudosCount').innerText = currentStory.likes;
+            renderStoriesGrid(stories);
+        }
+
+        // Comments System
+        function renderComments() {
+            const list = document.getElementById('commentsList');
+            list.innerHTML = '';
+
+            if (!currentStory.comments || currentStory.comments.length === 0) {
+                list.innerHTML = '<p class="text-xs opacity-60 italic">Aún no hay comentarios. ¡Sé la primera en comentar!</p>';
+                return;
+            }
+
+            currentStory.comments.forEach(c => {
+                const item = document.createElement('div');
+                item.className = "p-3 rounded-xl bg-black/5 dark:bg-white/5 space-y-1 text-xs border border-custom";
+                item.innerHTML = `
+                    <div class="flex items-center justify-between font-semibold">
+                        <span class="text-accent-amber">${c.author}</span>
+                        <span class="opacity-50 text-[10px]">${c.date}</span>
+                    </div>
+                    <p class="opacity-80 font-body">${c.text}</p>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function postComment() {
+            const authorInput = document.getElementById('commentAuthor');
+            const textInput = document.getElementById('commentText');
+
+            const author = authorInput.value.trim() || 'Lectora Anónima';
+            const text = textInput.value.trim();
+
+            if (!text) return;
+
+            if (!currentStory.comments) currentStory.comments = [];
+
+            currentStory.comments.push({
+                author: author,
+                text: text,
+                date: 'Justo ahora'
+            });
+
+            textInput.value = '';
+            renderComments();
+        }
+
+        // Filter / Search Logic
+        function filterStories() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = stories.filter(s => 
+                s.title.toLowerCase().includes(query) ||
+                s.author.toLowerCase().includes(query) ||
+                s.fandom.toLowerCase().includes(query) ||
+                s.tags.some(t => t.toLowerCase().includes(query))
+            );
+            renderStoriesGrid(filtered);
+        }
+
+        function filterStoriesMobile() {
+            const query = document.getElementById('mobileSearchInput').value.toLowerCase();
+            const filtered = stories.filter(s => 
+                s.title.toLowerCase().includes(query) ||
+                s.author.toLowerCase().includes(query) ||
+                s.fandom.toLowerCase().includes(query)
+            );
+            renderStoriesGrid(filtered);
+        }
+
+        function filterByFandom(fandom) {
+            // Update button styles
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(b => {
+                b.classList.remove('bg-accent-amber', 'text-white');
+                b.classList.add('border', 'border-custom');
+            });
+
+            event.target.classList.add('bg-accent-amber', 'text-white');
+            event.target.classList.remove('border', 'border-custom');
+
+            if (fandom === 'all') {
+                renderStoriesGrid(stories);
+            } else {
+                const filtered = stories.filter(s => s.fandom === fandom);
+                renderStoriesGrid(filtered);
+            }
+        }
+
+        // Handle Publishing New Story Form
+        function handlePublish(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('pubTitle').value.trim();
+            const author = document.getElementById('pubAuthor').value.trim();
+            const fandom = document.getElementById('pubFandom').value;
+            const tags = document.getElementById('pubTags').value.split(',').map(t => t.trim()).filter(Boolean);
+            const cover = document.getElementById('pubCover').value.trim();
+            const audioUrl = document.getElementById('pubAudio').value.trim();
+            const warnings = document.getElementById('pubWarnings').value.trim();
+            const summary = document.getElementById('pubSummary').value.trim();
+            const rawContent = document.getElementById('pubContent').value.trim();
+
+            // Format paragraphs
+            const formattedContent = rawContent.split('\n\n').map(p => `<p>${p}</p>`).join('');
+            const wordCount = rawContent.split(/\s+/).length;
+
+            const newStory = {
+                id: Date.now(),
+                title: title,
+                author: author,
+                fandom: fandom,
+                tags: tags.length > 0 ? tags : ["General"],
+                warnings: warnings || "Ninguna",
+                summary: summary,
+                wordCount: wordCount,
+                readTime: `${Math.ceil(wordCount / 200)} min`,
+                likes: 1,
+                cover: cover || "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=600&q=80",
+                audioUrl: audioUrl || null,
+                audioTitle: "Ambiente Integrado",
+                comments: [],
+                content: formattedContent
+            };
+
+            stories.unshift(newStory);
+            renderStoriesGrid(stories);
+
+            // Reset form
+            document.getElementById('publishForm').reset();
+
+            // Open published story immediately
+            openReader(newStory.id);
+        }
+    </script>
+</body>
+</html>
