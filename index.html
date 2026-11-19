@@ -66,7 +66,7 @@
       <span class="badge-bugambilia text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Colectivo de Escritoras</span>
       <h2 class="font-serif-title text-2xl sm:text-3xl font-bold mt-3 mb-2">BIENVENIDAS A TINTAVERSO</h2>
       <p class="muted-text text-sm leading-relaxed mb-5">
-        Nuestra isla digital libre de anuncios. Un catálogo artesanal con ambientación literaria, portadas ilustradas y lectura cómoda para compartir nuestras obras.
+        Nuestra isla digital libre de anuncios. Un catálogo artesanal con ambientación musical, portadas ilustradas y lectura cómoda para compartir nuestras obras.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -101,6 +101,17 @@
           <div id="lec-tags" class="flex flex-wrap gap-1.5 mt-3"></div>
           <p id="lec-sinopsis" class="text-xs muted-text mt-3 italic leading-relaxed"></p>
         </div>
+      </div>
+
+      <!-- Reproductor Musical de YouTube (si la obra o capítulo tiene enlace) -->
+      <div id="bloque-musica" class="hidden input-surface border rounded-xl p-3 mb-5">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-xs font-semibold flex items-center gap-1.5">🎵 Ambientación Musical</span>
+          <button onclick="alternarReproductor()" id="btn-toggle-musica" class="badge-bugambilia text-[11px] font-semibold px-2.5 py-1 rounded-lg">
+            Mostrar reproductor
+          </button>
+        </div>
+        <div id="contenedor-iframe-yt" class="hidden mt-3 rounded-xl overflow-hidden aspect-video max-h-48 w-full"></div>
       </div>
 
       <!-- Barra de herramientas: Tamaño, Likes y Panel de Autora -->
@@ -181,6 +192,10 @@
           <textarea id="pub-sinopsis" rows="2" placeholder="De qué trata tu historia..." class="input-surface border rounded-xl px-3 py-2 w-full"></textarea>
         </div>
         <div>
+          <label class="block text-xs font-semibold mb-1">🎵 Enlace de YouTube para ambientación (opcional)</label>
+          <input type="url" id="pub-musica" placeholder="https://www.youtube.com/watch?v=..." class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div>
           <label class="block text-xs font-semibold mb-1">Portada (imagen de tu galería)</label>
           <input type="file" id="pub-portada" accept="image/*" class="w-full text-xs">
         </div>
@@ -220,6 +235,10 @@
           <input type="text" id="edit-cap-titulo" required placeholder="Ej. Capítulo 2. Acónito" class="input-surface border rounded-xl px-3 py-2 w-full">
         </div>
         <div>
+          <label class="block text-xs font-semibold mb-1">🎵 Enlace de YouTube (opcional, para esta obra/capítulo)</label>
+          <input type="url" id="edit-cap-musica" placeholder="https://www.youtube.com/watch?v=..." class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div>
           <label class="block text-xs font-semibold mb-1">Contenido *</label>
           <p class="text-[11px] muted-text mb-1">Tip: Usa <code>[epigrafe: Tu texto]</code> para epígrafes alineados a la derecha.</p>
           <textarea id="edit-cap-texto" required rows="8" placeholder="Escribe o pega el capítulo..." class="input-surface border rounded-xl px-3 py-2 w-full font-reading text-base"></textarea>
@@ -238,10 +257,9 @@
   </footer>
 
   <script>
-    // Conexión directa con tu proyecto Supabase
     const SUPABASE_URL = 'https://pggedzduehkepbxsokby.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_WygUV8ccrlNbefaWZSUNPA__wj-Oh2i';
-    const CLAVE_AUTORA = 'tintaverso'; // Puedes cambiar esta contraseña cuando quieras
+    const CLAVE_AUTORA = 'tintaverso';
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let todasLasHistorias = [];
@@ -256,7 +274,45 @@
     ];
     let tamanoFuente = 19;
 
-    // Cargar historias desde Supabase al abrir
+    // Extrae el ID de video de cualquier enlace de YouTube
+    function obtenerIdYouTube(url) {
+      if (!url) return null;
+      const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/);
+      return match ? match[1] : null;
+    }
+
+    function actualizarReproductorMusica(url) {
+      const bloque = document.getElementById('bloque-musica');
+      const contenedor = document.getElementById('contenedor-iframe-yt');
+      const btn = document.getElementById('btn-toggle-musica');
+      const videoId = obtenerIdYouTube(url);
+
+      if (!videoId) {
+        bloque.classList.add('hidden');
+        contenedor.innerHTML = '';
+        contenedor.classList.add('hidden');
+        return;
+      }
+
+      bloque.classList.remove('hidden');
+      contenedor.classList.add('hidden');
+      btn.textContent = 'Mostrar reproductor';
+      contenedor.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videoId}" title="Ambientación musical" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    }
+
+    function alternarReproductor() {
+      const contenedor = document.getElementById('contenedor-iframe-yt');
+      const btn = document.getElementById('btn-toggle-musica');
+      const oculto = contenedor.classList.contains('hidden');
+      if (oculto) {
+        contenedor.classList.remove('hidden');
+        btn.textContent = 'Ocultar reproductor';
+      } else {
+        contenedor.classList.add('hidden');
+        btn.textContent = 'Mostrar reproductor';
+      }
+    }
+
     async function cargarHistorias() {
       const estadoEl = document.getElementById('estado-carga');
       try {
@@ -295,13 +351,14 @@
       gridEl.innerHTML = lista.map(h => {
         const numCaps = Array.isArray(h.chapters) ? h.chapters.length : 1;
         const tagsHtml = (h.tags || []).slice(0, 3).map(t => `<span class="input-surface border text-[10px] px-2 py-0.5 rounded-md">#${t}</span>`).join('');
+        const tieneMusica = h.music_url ? '<span title="Incluye música">🎵</span>' : '';
         return `
           <div onclick="abrirHistoria('${h.id}')" class="card-surface border rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex gap-4">
             ${h.cover ? `<img src="${h.cover}" alt="${h.title}" class="w-24 h-32 object-cover rounded-xl flex-shrink-0 border border-stone-200">` : `<div class="w-24 h-32 rounded-xl bg-pink-900/10 flex items-center justify-center text-2xl flex-shrink-0">📖</div>`}
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-2">
                 <span class="badge-bugambilia text-[9px] font-bold uppercase px-2 py-0.5 rounded-full truncate">${h.fandom || 'Original'}</span>
-                <span class="text-[11px] muted-text">❤️ ${h.likes || 0}</span>
+                <span class="text-[11px] muted-text">${tieneMusica} ❤️ ${h.likes || 0}</span>
               </div>
               <h3 class="font-serif-title font-bold text-base mt-1.5 truncate">${h.title}</h3>
               <p class="text-xs muted-text mb-1.5">Por ${h.author}</p>
@@ -365,4 +422,209 @@
       selector.value = indiceCapituloActual;
     }
 
- 
+    function formatearTextoCapitulo(texto) {
+      if (!texto) return '';
+      return texto.split(/\n+/).map(parrafo => {
+        const limpio = parrafo.trim();
+        if (!limpio) return '';
+        const matchEpigrafe = limpio.match(/^\[epigrafe:\s*(.+?)\]$/i);
+        if (matchEpigrafe) {
+          return `<blockquote class="text-right italic muted-text border-r-2 border-[#9D174D]/50 pr-4 my-6 ml-auto max-w-md text-[0.92em]">${matchEpigrafe[1]}</blockquote>`;
+        }
+        return `<p>${limpio}</p>`;
+      }).join('');
+    }
+
+    function mostrarCapitulo(idx) {
+      const caps = historiaActual.chapters || [];
+      if (!caps.length) return;
+      indiceCapituloActual = idx;
+
+      const cap = caps[idx];
+      document.getElementById('selector-capitulo').value = idx;
+      document.getElementById('cap-titulo').textContent = cap.title || `Capítulo ${idx + 1}`;
+      document.getElementById('cap-contenido').innerHTML = formatearTextoCapitulo(cap.content);
+
+      // Usa la música específica del capítulo si tiene, o la general de la obra
+      const musicaActiva = cap.music_url || historiaActual.music_url || '';
+      actualizarReproductorMusica(musicaActiva);
+
+      document.getElementById('indicador-cap').textContent = `${idx + 1} de ${caps.length}`;
+      document.getElementById('btn-cap-anterior').disabled = idx === 0;
+      document.getElementById('btn-cap-siguiente').disabled = idx >= caps.length - 1;
+    }
+
+    function seleccionarCapitulo(valor) { mostrarCapitulo(parseInt(valor, 10)); }
+
+    function navegarCapitulo(delta) {
+      const nuevo = indiceCapituloActual + delta;
+      const caps = historiaActual.chapters || [];
+      if (nuevo >= 0 && nuevo < caps.length) {
+        mostrarCapitulo(nuevo);
+        window.scrollTo({ top: 180, behavior: 'smooth' });
+      }
+    }
+
+    function mostrarBiblioteca() {
+      document.getElementById('contenedor-iframe-yt').innerHTML = ''; // Detiene el audio al salir
+      document.getElementById('vista-lectura').classList.add('hidden');
+      document.getElementById('vista-biblioteca').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function abrirModalNuevaHistoria() { document.getElementById('modal-historia').classList.remove('hidden'); }
+    function cerrarModalHistoria() { document.getElementById('modal-historia').classList.add('hidden'); }
+
+    async function publicarHistoria(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-submit-historia');
+      btn.disabled = true;
+      btn.textContent = 'Subiendo a la nube...';
+
+      try {
+        let coverUrl = '';
+        const archivo = document.getElementById('pub-portada').files[0];
+        if (archivo) {
+          const ext = archivo.name.split('.').pop();
+          const nombreArchivo = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+          const { error: uploadErr } = await db.storage.from('portadas').upload(nombreArchivo, archivo);
+          if (uploadErr) throw uploadErr;
+          const { data: publicData } = db.storage.from('portadas').getPublicUrl(nombreArchivo);
+          coverUrl = publicData.publicUrl;
+        }
+
+        const tags = document.getElementById('pub-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+        const capTitulo = document.getElementById('pub-cap-titulo').value.trim();
+        const capTexto = document.getElementById('pub-cap-texto').value.trim();
+        const musicUrl = document.getElementById('pub-musica').value.trim();
+
+        const nuevaHistoria = {
+          title: document.getElementById('pub-titulo').value.trim(),
+          author: document.getElementById('pub-autora').value.trim(),
+          fandom: document.getElementById('pub-fandom').value.trim() || 'Original',
+          tags,
+          summary: document.getElementById('pub-sinopsis').value.trim(),
+          music_url: musicUrl,
+          cover: coverUrl,
+          likes: 0,
+          chapters: [{ title: capTitulo, content: capTexto, music_url: musicUrl }]
+        };
+
+        const { error } = await db.from('stories').insert([nuevaHistoria]);
+        if (error) throw error;
+
+        document.getElementById('form-historia').reset();
+        cerrarModalHistoria();
+        await cargarHistorias();
+        alert('¡Historia publicada con éxito en Tintaverso!');
+      } catch (err) {
+        alert('Error al publicar: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Publicar Historia en la Nube ✨';
+      }
+    }
+
+    function abrirModalCapitulo(modo) {
+      modoCapitulo = modo;
+      const modal = document.getElementById('modal-capitulo');
+      const header = document.getElementById('modal-cap-header');
+      const tituloInput = document.getElementById('edit-cap-titulo');
+      const musicaInput = document.getElementById('edit-cap-musica');
+      const textoInput = document.getElementById('edit-cap-texto');
+
+      if (modo === 'editar') {
+        const cap = historiaActual.chapters[indiceCapituloActual];
+        header.textContent = 'Editar Capítulo Actual';
+        tituloInput.value = cap.title || '';
+        musicaInput.value = cap.music_url || historiaActual.music_url || '';
+        textoInput.value = cap.content || '';
+      } else {
+        const siguienteNum = (historiaActual.chapters || []).length + 1;
+        header.textContent = `Agregar Capítulo ${siguienteNum}`;
+        tituloInput.value = `Capítulo ${siguienteNum}. `;
+        musicaInput.value = historiaActual.music_url || '';
+        textoInput.value = '';
+      }
+      modal.classList.remove('hidden');
+    }
+
+    function cerrarModalCapitulo() {
+      document.getElementById('modal-capitulo').classList.add('hidden');
+    }
+
+    async function guardarCapitulo(e) {
+      e.preventDefault();
+      const claveIngresada = document.getElementById('cap-clave').value.trim();
+      if (claveIngresada !== CLAVE_AUTORA) {
+        alert('Clave de autora incorrecta.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-guardar-cap');
+      btn.disabled = true;
+      btn.textContent = 'Guardando...';
+
+      try {
+        const titulo = document.getElementById('edit-cap-titulo').value.trim();
+        const musicUrl = document.getElementById('edit-cap-musica').value.trim();
+        const content = document.getElementById('edit-cap-texto').value.trim();
+        const capitulosActualizados = [...(historiaActual.chapters || [])];
+
+        if (modoCapitulo === 'editar') {
+          capitulosActualizados[indiceCapituloActual] = { title: titulo, content, music_url: musicUrl };
+        } else {
+          capitulosActualizados.push({ title: titulo, content, music_url: musicUrl });
+          indiceCapituloActual = capitulosActualizados.length - 1;
+        }
+
+        const updatePayload = { chapters: capitulosActualizados };
+        if (musicUrl && !historiaActual.music_url) {
+          updatePayload.music_url = musicUrl;
+          historiaActual.music_url = musicUrl;
+        }
+
+        const { error } = await db
+          .from('stories')
+          .update(updatePayload)
+          .eq('id', historiaActual.id);
+
+        if (error) throw error;
+
+        historiaActual.chapters = capitulosActualizados;
+        actualizarSelectorCapitulos();
+        mostrarCapitulo(indiceCapituloActual);
+        cerrarModalCapitulo();
+        alert(modoCapitulo === 'editar' ? '¡Capítulo actualizado!' : '¡Nuevo capítulo publicado!');
+      } catch (err) {
+        alert('No se pudo guardar: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Guardar Cambios';
+      }
+    }
+
+    async function darLike() {
+      if (!historiaActual) return;
+      const nuevosLikes = (historiaActual.likes || 0) + 1;
+      historiaActual.likes = nuevosLikes;
+      document.getElementById('lec-likes').textContent = nuevosLikes;
+      await db.from('stories').update({ likes: nuevosLikes }).eq('id', historiaActual.id);
+    }
+
+    function cambiarTema() {
+      document.body.classList.remove(temas[indiceTemaActual].clase);
+      indiceTemaActual = (indiceTemaActual + 1) % temas.length;
+      document.body.classList.add(temas[indiceTemaActual].clase);
+      document.getElementById('btn-tema').textContent = temas[indiceTemaActual].etiqueta;
+    }
+
+    function cambiarTamanoFuente(delta) {
+      tamanoFuente = Math.min(28, Math.max(14, tamanoFuente + delta));
+      document.getElementById('cap-contenido').style.fontSize = tamanoFuente + 'px';
+    }
+
+    cargarHistorias();
+  </script>
+</body>
+</html>
