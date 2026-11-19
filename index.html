@@ -1,441 +1,368 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tintaverso | Colectivo Literario</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tintaverso | Refugio Literario</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; }
     .font-serif-title { font-family: 'Cinzel', serif; }
-    .font-reading { font-family: 'Lora', serif; }
-    .theme-light { background-color: #FAF7F2; color: #2C2520; }
-    .theme-sepia { background-color: #F4ECD8; color: #3D3124; }
-    .theme-dark  { background-color: #1A1718; color: #E6DFD7; }
-    .card-light { background-color: #FFFFFF; border-color: #E8DFD3; }
-    .card-sepia { background-color: #FAF3E3; border-color: #DFD2B8; }
-    .card-dark  { background-color: #242022; border-color: #363033; }
-    .accent-bugambilia { background-color: #9E2A55; color: #FFFFFF; }
-    .accent-bugambilia:hover { background-color: #822044; }
-    .text-bugambilia { color: #9E2A55; }
-    .theme-dark .text-bugambilia { color: #E86B9A; }
+    .font-reading { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+    /* Temas de lectura */
+    .theme-light { background-color: #FAF7F5; color: #292524; }
+    .theme-light .card-surface { background-color: #FFFFFF; border-color: #E7E5E4; }
+    .theme-light .muted-text { color: #78716C; }
+    .theme-light .input-surface { background-color: #FAF7F5; border-color: #D6D3D1; color: #292524; }
+
+    .theme-sepia { background-color: #F4ECD8; color: #3E3226; }
+    .theme-sepia .card-surface { background-color: #FBF6EA; border-color: #DFD3BC; }
+    .theme-sepia .muted-text { color: #6E5D4B; }
+    .theme-sepia .input-surface { background-color: #F4ECD8; border-color: #CFC0A5; color: #3E3226; }
+
+    .theme-dark { background-color: #161417; color: #E7E2E5; }
+    .theme-dark .card-surface { background-color: #211D22; border-color: #362F38; }
+    .theme-dark .muted-text { color: #A69BA3; }
+    .theme-dark .input-surface { background-color: #161417; border-color: #3E3640; color: #E7E2E5; }
+
+    .btn-bugambilia { background-color: #9D174D; color: #FFFFFF; }
+    .btn-bugambilia:hover { background-color: #831843; }
+    .badge-bugambilia { background-color: #FCE7F3; color: #9D174D; }
+    .theme-dark .badge-bugambilia { background-color: #4C122B; color: #F9A8D4; }
   </style>
 </head>
 <body class="theme-light min-h-screen flex flex-col">
 
-  <!-- Barra de Navegación -->
-  <header class="sticky top-0 z-30 backdrop-blur-md border-b border-stone-200/70 bg-white/80 dark:bg-stone-900/80">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-      <button onclick="showView('library')" class="flex items-center gap-2.5 text-left">
-        <div class="w-9 h-9 rounded-lg accent-bugambilia flex items-center justify-center shadow-sm">
-          <span class="text-lg">✒️</span>
-        </div>
+  <!-- Barra Superior -->
+  <header class="card-surface border-b sticky top-0 z-30 backdrop-blur-md bg-opacity-95">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
+      <button onclick="mostrarBiblioteca()" class="flex items-center gap-2.5 text-left">
+        <div class="w-10 h-10 rounded-xl btn-bugambilia flex items-center justify-center shadow-sm text-lg">✒️</div>
         <div>
-          <h1 class="font-serif-title text-lg font-bold tracking-wide text-bugambilia leading-none">TINTAVERSO</h1>
-          <p class="text-[11px] text-stone-500">Refugio Literario</p>
+          <h1 class="font-serif-title text-lg font-bold tracking-wide text-[#9D174D] dark:text-pink-400 leading-tight">TINTAVERSO</h1>
+          <p class="text-[11px] muted-text leading-none">Refugio Literario</p>
         </div>
       </button>
 
       <div class="flex items-center gap-2">
-        <button onclick="cycleTheme()" title="Cambiar modo de lectura" class="px-3 py-1.5 rounded-full text-xs font-medium border border-stone-300 bg-white/90 text-stone-700 hover:bg-stone-100">
-          <span id="theme-label">☀️ Papel</span>
+        <button onclick="cambiarTema()" id="btn-tema" class="card-surface border px-3 py-1.5 rounded-full text-xs font-medium shadow-sm">
+          ☀️ Papel
         </button>
-        <button onclick="showView('publish')" class="px-3.5 py-1.5 rounded-full text-xs font-semibold accent-bugambilia shadow-sm">
+        <button onclick="abrirModalNuevaHistoria()" class="btn-bugambilia px-3.5 py-2 rounded-full text-xs font-semibold shadow-sm">
           + Subir Historia
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Contenido Principal -->
-  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
+  <!-- Vista Principal: Biblioteca -->
+  <main id="vista-biblioteca" class="max-w-4xl w-full mx-auto px-4 py-6 flex-1">
+    <section class="card-surface border rounded-2xl p-6 mb-6 shadow-sm">
+      <span class="badge-bugambilia text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">Colectivo de Escritoras</span>
+      <h2 class="font-serif-title text-2xl sm:text-3xl font-bold mt-3 mb-2">BIENVENIDAS A TINTAVERSO</h2>
+      <p class="muted-text text-sm leading-relaxed mb-5">
+        Nuestra isla digital libre de anuncios. Un catálogo artesanal con ambientación literaria, portadas ilustradas y lectura cómoda para compartir nuestras obras.
+      </p>
 
-    <!-- VISTA 1: BIBLIOTECA -->
-    <section id="view-library" class="space-y-6">
-      <div class="p-6 rounded-2xl border card-light shadow-sm relative overflow-hidden">
-        <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-semibold uppercase tracking-wider bg-pink-100 text-pink-900 mb-2">
-          Colectivo de Escritoras
-        </span>
-        <h2 class="font-serif-title text-2xl sm:text-3xl font-bold mb-2">Bienvenidas a Tintaverso</h2>
-        <p class="text-sm text-stone-600 max-w-2xl leading-relaxed">
-          Nuestra isla digital libre de anuncios. Un catálogo artesanal con ambientación musical, ilustraciones y lectura cómoda para compartir nuestras obras.
-        </p>
-
-        <!-- Buscador y Filtros -->
-        <div class="mt-5 flex flex-col sm:flex-row gap-3">
-          <input type="text" id="search-input" oninput="renderStories()" placeholder="Buscar por título, autora o etiqueta..." 
-            class="flex-1 px-4 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm focus:outline-none focus:ring-2 focus:ring-pink-700" />
-          <select id="fandom-filter" onchange="renderStories()" 
-            class="px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm focus:outline-none">
-            <option value="ALL">Todos los Fandoms</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Estado de carga -->
-      <div id="loading-state" class="text-center py-12 text-stone-500 text-sm">
-        Cargando biblioteca desde la nube... ✨
-      </div>
-
-      <!-- Cuadrícula de Historias -->
-      <div id="stories-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden"></div>
-    </section>
-
-    <!-- VISTA 2: LECTOR -->
-    <section id="view-reader" class="hidden max-w-3xl mx-auto space-y-6">
-      <button onclick="showView('library')" class="text-xs font-semibold text-bugambilia hover:underline flex items-center gap-1">
-        ← Volver a la biblioteca
-      </button>
-
-      <article id="reader-container" class="p-6 sm:p-10 rounded-2xl border card-light shadow-sm space-y-6">
-        <div class="flex flex-col sm:flex-row gap-5 items-start border-b border-stone-200/70 pb-6">
-          <img id="reader-cover" src="" alt="Portada" class="w-28 h-40 object-cover rounded-xl shadow-md bg-stone-200 shrink-0" />
-          <div class="space-y-2">
-            <span id="reader-fandom" class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-pink-100 text-pink-900"></span>
-            <h2 id="reader-title" class="font-serif-title text-2xl sm:text-3xl font-bold"></h2>
-            <p class="text-sm text-stone-500">Por <strong id="reader-author" class="text-stone-700"></strong></p>
-            <div id="reader-tags" class="flex flex-wrap gap-1.5 pt-1"></div>
-          </div>
-        </div>
-
-        <!-- Reproductor Ambiental si existe -->
-        <div id="reader-audio-box" class="hidden p-3.5 rounded-xl bg-stone-100/80 border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span class="text-xs font-medium text-stone-700">🎵 Ambientación sonora del capítulo</span>
-          <audio id="reader-audio" controls class="h-8 w-full sm:w-64"></audio>
-        </div>
-
-        <!-- Controles de tamaño de letra -->
-        <div class="flex items-center justify-between text-xs text-stone-500 bg-stone-500/5 px-3 py-2 rounded-lg">
-          <span>Tamaño de lectura:</span>
-          <div class="flex gap-2">
-            <button onclick="changeFontSize(-1)" class="px-2.5 py-1 rounded border border-stone-300 font-bold">A-</button>
-            <button onclick="changeFontSize(1)" class="px-2.5 py-1 rounded border border-stone-300 font-bold">A+</button>
-          </div>
-        </div>
-
-        <!-- Texto del Capítulo -->
-        <div id="reader-content" class="font-reading text-base sm:text-lg leading-relaxed whitespace-pre-line space-y-4"></div>
-
-        <!-- Botón Me Gusta -->
-        <div class="pt-6 border-t border-stone-200/70 flex items-center justify-between">
-          <button id="like-btn" onclick="likeCurrentStory()" class="px-4 py-2 rounded-full border border-pink-300 text-bugambilia text-sm font-semibold hover:bg-pink-50 flex items-center gap-2">
-            ❤️ Me encanta (<span id="reader-likes">0</span>)
-          </button>
-          <span id="reader-words" class="text-xs text-stone-400"></span>
-        </div>
-      </article>
-    </section>
-
-    <!-- VISTA 3: PUBLICAR NUEVA HISTORIA -->
-    <section id="view-publish" class="hidden max-w-2xl mx-auto space-y-5">
-      <button onclick="showView('library')" class="text-xs font-semibold text-bugambilia hover:underline">
-        ← Cancelar y volver
-      </button>
-
-      <div class="p-6 sm:p-8 rounded-2xl border card-light shadow-sm">
-        <h2 class="font-serif-title text-2xl font-bold mb-1">Publicar en Tintaverso</h2>
-        <p class="text-xs text-stone-500 mb-6">Tu historia se guardará en la nube y será visible para todo el grupo al instante.</p>
-
-        <form id="publish-form" onsubmit="handlePublish(event)" class="space-y-4">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold mb-1">Título de la obra *</label>
-              <input type="text" id="pub-title" required placeholder="Ej. Miel y Acónito"
-                class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold mb-1">Autora / Seudónimo *</label>
-              <input type="text" id="pub-author" required placeholder="Ej. Valdrizes"
-                class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-semibold mb-1">Fandom o Categoría</label>
-              <input type="text" id="pub-fandom" placeholder="Ej. ASOIAF, Original, Harry Potter"
-                class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm" />
-            </div>
-            <div>
-              <label class="block text-xs font-semibold mb-1">Etiquetas (separadas por coma)</label>
-              <input type="text" id="pub-tags" placeholder="Romance, Gótico, Dark Academia"
-                class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm" />
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mb-1">Advertencias de contenido (opcional)</label>
-            <input type="text" id="pub-warnings" placeholder="Ej. Violencia, Lenguaje adulto, Ninguna"
-              class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mb-1">Portada (sube una imagen desde tu galería)</label>
-            <input type="file" id="pub-cover-file" accept="image/*"
-              class="w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-pink-100 file:text-pink-900 hover:file:bg-pink-200" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mb-1">Sinopsis corta *</label>
-            <textarea id="pub-summary" required rows="2" placeholder="De qué trata la historia..."
-              class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm"></textarea>
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mb-1">Enlace de música/audio MP3 (opcional)</label>
-            <input type="url" id="pub-audio" placeholder="https://..."
-              class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm" />
-          </div>
-
-          <div>
-            <label class="block text-xs font-semibold mb-1">Texto del Capítulo 1 *</label>
-            <textarea id="pub-content" required rows="10" placeholder="Escribe o pega aquí tu capítulo..."
-              class="w-full px-3.5 py-2 rounded-xl border border-stone-300 bg-white text-stone-800 text-sm font-reading"></textarea>
-          </div>
-
-          <button type="submit" id="submit-btn" class="w-full py-3 rounded-xl font-semibold text-sm accent-bugambilia shadow-md transition">
-            Publicar Historia en la Nube ✨
-          </button>
-        </form>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <input type="text" id="buscador" oninput="filtrarHistorias()" placeholder="Buscar por título, autora o etiqueta..." class="input-surface border rounded-xl px-3.5 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-pink-700">
+        <select id="filtro-fandom" onchange="filtrarHistorias()" class="input-surface border rounded-xl px-3.5 py-2.5 text-sm w-full outline-none focus:ring-2 focus:ring-pink-700">
+          <option value="Todos">Todos los Fandoms</option>
+        </select>
       </div>
     </section>
 
+    <div id="estado-carga" class="text-center py-10 muted-text text-sm">
+      Cargando biblioteca desde la nube...
+    </div>
+
+    <div id="grid-historias" class="grid grid-cols-1 sm:grid-cols-2 gap-5"></div>
   </main>
 
-  <footer class="py-6 text-center text-xs text-stone-400 border-t border-stone-200/60 mt-10">
+  <!-- Vista de Lectura de Historia -->
+  <section id="vista-lectura" class="hidden max-w-3xl w-full mx-auto px-4 py-6 flex-1">
+    <button onclick="mostrarBiblioteca()" class="muted-text hover:underline text-xs font-semibold mb-4 inline-flex items-center gap-1">
+      ← Volver a la biblioteca
+    </button>
+
+    <article class="card-surface border rounded-2xl p-5 sm:p-8 shadow-sm">
+      <!-- Encabezado de la obra -->
+      <div class="flex flex-col sm:flex-row gap-5 items-start mb-6">
+        <img id="lec-portada" src="" alt="Portada" class="w-32 h-44 object-cover rounded-xl shadow-md border border-stone-200 hidden">
+        <div class="flex-1">
+          <span id="lec-fandom" class="badge-bugambilia text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"></span>
+          <h2 id="lec-titulo" class="font-serif-title text-2xl sm:text-3xl font-bold mt-2"></h2>
+          <p class="text-sm muted-text mt-1">Por <strong id="lec-autora" class="font-semibold"></strong></p>
+          <div id="lec-tags" class="flex flex-wrap gap-1.5 mt-3"></div>
+          <p id="lec-sinopsis" class="text-xs muted-text mt-3 italic leading-relaxed"></p>
+        </div>
+      </div>
+
+      <!-- Barra de herramientas: Tamaño, Likes y Panel de Autora -->
+      <div class="input-surface border rounded-xl p-3 mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs muted-text">Letra:</span>
+          <button onclick="cambiarTamanoFuente(-2)" class="card-surface border px-2.5 py-1 rounded-lg text-xs font-bold">A-</button>
+          <button onclick="cambiarTamanoFuente(2)" class="card-surface border px-2.5 py-1 rounded-lg text-xs font-bold">A+</button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="darLike()" id="btn-like" class="card-surface border px-3 py-1.5 rounded-lg text-xs font-semibold text-pink-700">
+            ❤️ <span id="lec-likes">0</span>
+          </button>
+          <button onclick="abrirModalCapitulo('editar')" class="card-surface border px-3 py-1.5 rounded-lg text-xs font-semibold">
+            ✏️ Editar Cap.
+          </button>
+          <button onclick="abrirModalCapitulo('nuevo')" class="btn-bugambilia px-3 py-1.5 rounded-lg text-xs font-semibold">
+            + Capítulo
+          </button>
+        </div>
+      </div>
+
+      <!-- Selector de Capítulos -->
+      <div id="barra-capitulos" class="mb-6">
+        <label class="block text-[11px] uppercase tracking-wider muted-text font-semibold mb-1.5">Índice de capítulos</label>
+        <select id="selector-capitulo" onchange="seleccionarCapitulo(this.value)" class="input-surface border rounded-xl px-3.5 py-2.5 text-sm w-full font-medium outline-none"></select>
+      </div>
+
+      <!-- Contenido del Capítulo -->
+      <div class="border-t border-stone-200 dark:border-stone-700 pt-6">
+        <h3 id="cap-titulo" class="font-serif-title text-xl font-bold mb-6"></h3>
+        <div id="cap-contenido" class="font-reading leading-relaxed space-y-5" style="font-size: 19px;"></div>
+      </div>
+
+      <!-- Navegación inferior entre capítulos -->
+      <div class="flex items-center justify-between gap-3 mt-10 pt-5 border-t border-stone-200 dark:border-stone-700">
+        <button id="btn-cap-anterior" onclick="navegarCapitulo(-1)" class="card-surface border px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-40">
+          ← Anterior
+        </button>
+        <span id="indicador-cap" class="text-xs muted-text"></span>
+        <button id="btn-cap-siguiente" onclick="navegarCapitulo(1)" class="btn-bugambilia px-4 py-2 rounded-xl text-xs font-semibold disabled:opacity-40">
+          Siguiente →
+        </button>
+      </div>
+    </article>
+  </section>
+
+  <!-- Modal: Subir Nueva Historia -->
+  <div id="modal-historia" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="card-surface border rounded-2xl max-w-lg w-full p-6 my-8 shadow-xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-serif-title text-lg font-bold text-[#9D174D]">Publicar Nueva Obra</h3>
+        <button onclick="cerrarModalHistoria()" class="muted-text text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-historia" onsubmit="publicarHistoria(event)" class="space-y-3.5 text-sm">
+        <div>
+          <label class="block text-xs font-semibold mb-1">Título de la obra *</label>
+          <input type="text" id="pub-titulo" required placeholder="Ej. Miel y Acónito" class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold mb-1">Autora / Seudónimo *</label>
+            <input type="text" id="pub-autora" required placeholder="Ej. Valdrizes" class="input-surface border rounded-xl px-3 py-2 w-full">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1">Fandom / Género *</label>
+            <input type="text" id="pub-fandom" required value="ASOIAF" class="input-surface border rounded-xl px-3 py-2 w-full">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Etiquetas (separadas por coma)</label>
+          <input type="text" id="pub-tags" placeholder="AU Moderno, Slowburn, Dark Academia" class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Sinopsis breve</label>
+          <textarea id="pub-sinopsis" rows="2" placeholder="De qué trata tu historia..." class="input-surface border rounded-xl px-3 py-2 w-full"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Portada (imagen de tu galería)</label>
+          <input type="file" id="pub-portada" accept="image/*" class="w-full text-xs">
+        </div>
+        <hr class="border-stone-200 dark:border-stone-700">
+        <div>
+          <label class="block text-xs font-semibold mb-1">Título del Capítulo 1 *</label>
+          <input type="text" id="pub-cap-titulo" required placeholder="Ej. Capítulo 1. Vetiver" class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Texto del Capítulo 1 *</label>
+          <p class="text-[11px] muted-text mb-1">Tip: Escribe <code>[epigrafe: Tu cita o ficha]</code> para alinearlo a la derecha en cursiva.</p>
+          <textarea id="pub-cap-texto" required rows="6" placeholder="Pega aquí tu capítulo..." class="input-surface border rounded-xl px-3 py-2 w-full font-reading text-base"></textarea>
+        </div>
+
+        <button type="submit" id="btn-submit-historia" class="btn-bugambilia w-full py-3 rounded-xl font-bold shadow-md mt-2">
+          Publicar Historia en la Nube ✨
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Agregar o Editar Capítulo (Panel de Autora) -->
+  <div id="modal-capitulo" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div class="card-surface border rounded-2xl max-w-lg w-full p-6 my-8 shadow-xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="modal-cap-header" class="font-serif-title text-lg font-bold text-[#9D174D]">Agregar Capítulo</h3>
+        <button onclick="cerrarModalCapitulo()" class="muted-text text-xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-capitulo" onsubmit="guardarCapitulo(event)" class="space-y-3.5 text-sm">
+        <div>
+          <label class="block text-xs font-semibold mb-1">Clave de Autora *</label>
+          <input type="password" id="cap-clave" required placeholder="Escribe la clave del colectivo" class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Título del Capítulo *</label>
+          <input type="text" id="edit-cap-titulo" required placeholder="Ej. Capítulo 2. Acónito" class="input-surface border rounded-xl px-3 py-2 w-full">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1">Contenido *</label>
+          <p class="text-[11px] muted-text mb-1">Tip: Usa <code>[epigrafe: Tu texto]</code> para epígrafes alineados a la derecha.</p>
+          <textarea id="edit-cap-texto" required rows="8" placeholder="Escribe o pega el capítulo..." class="input-surface border rounded-xl px-3 py-2 w-full font-reading text-base"></textarea>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="cerrarModalCapitulo()" class="card-surface border flex-1 py-2.5 rounded-xl font-semibold">Cancelar</button>
+          <button type="submit" id="btn-guardar-cap" class="btn-bugambilia flex-1 py-2.5 rounded-xl font-bold shadow-md">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="py-6 text-center text-xs muted-text border-t border-stone-200/60 mt-10">
     Tintaverso • Espacio literario compartido
   </footer>
 
   <script>
-    // 1. Conexión directa con tu proyecto Supabase
+    // Conexión directa con tu proyecto Supabase
     const SUPABASE_URL = 'https://pggedzduehkepbxsokby.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_WygUV8ccrlNbefaWZSUNPA__wj-Oh2i';
+    const CLAVE_AUTORA = 'tintaverso'; // Puedes cambiar esta contraseña cuando quieras
     const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let allStories = [];
-    let currentStory = null;
-    let currentThemeIndex = 0;
-    const themes = [
-      { id: 'theme-light', card: 'card-light', label: '☀️ Papel' },
-      { id: 'theme-sepia', card: 'card-sepia', label: '📜 Pergamino' },
-      { id: 'theme-dark',  card: 'card-dark',  label: '🌙 Nocturno' }
+    let todasLasHistorias = [];
+    let historiaActual = null;
+    let indiceCapituloActual = 0;
+    let modoCapitulo = 'nuevo';
+    let indiceTemaActual = 0;
+    const temas = [
+      { clase: 'theme-light', etiqueta: '☀️ Papel' },
+      { clase: 'theme-sepia', etiqueta: '📜 Pergamino' },
+      { clase: 'theme-dark', etiqueta: '🌙 Oscuro' }
     ];
-    let readingFontSize = 17;
+    let tamanoFuente = 19;
 
-    // 2. Cargar historias desde Supabase al abrir la página
-    async function loadStories() {
-      const loadingEl = document.getElementById('loading-state');
-      const gridEl = document.getElementById('stories-grid');
-
-      const { data, error } = await db
-        .from('stories')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        loadingEl.textContent = 'Hubo un detalle al conectar con la biblioteca: ' + error.message;
-        return;
-      }
-
-      allStories = data || [];
-      loadingEl.classList.add('hidden');
-      gridEl.classList.remove('hidden');
-
-      updateFandomFilter();
-      renderStories();
-    }
-
-    function updateFandomFilter() {
-      const select = document.getElementById('fandom-filter');
-      const fandoms = [...new Set(allStories.map(s => s.fandom).filter(Boolean))];
-      select.innerHTML = '<option value="ALL">Todos los Fandoms</option>' +
-        fandoms.map(f => `<option value="${f}">${f}</option>`).join('');
-    }
-
-    function renderStories() {
-      const grid = document.getElementById('stories-grid');
-      const query = document.getElementById('search-input').value.toLowerCase();
-      const fandom = document.getElementById('fandom-filter').value;
-      const cardClass = themes[currentThemeIndex].card;
-
-      const filtered = allStories.filter(s => {
-        const matchesFandom = fandom === 'ALL' || s.fandom === fandom;
-        const matchesText = (s.title || '').toLowerCase().includes(query) ||
-                            (s.author || '').toLowerCase().includes(query) ||
-                            (s.tags || []).some(t => t.toLowerCase().includes(query));
-        return matchesFandom && matchesText;
-      });
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full text-center py-12 text-stone-500 text-sm">
-          Aún no hay historias publicadas con ese filtro. ¡Sé la primera en presionar <strong>+ Subir Historia</strong>!
-        </div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered.map(story => `
-        <div onclick="openStory('${story.id}')" class="cursor-pointer rounded-2xl border ${cardClass} overflow-hidden shadow-sm hover:shadow-md transition flex flex-col">
-          <div class="h-44 bg-stone-200 relative overflow-hidden">
-            <img src="${story.cover || 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=500'}" alt="${story.title}" class="w-full h-full object-cover" />
-            <span class="absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-black/65 text-white backdrop-blur-sm">
-              ${story.fandom || 'Original'}
-            </span>
-          </div>
-          <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
-            <div>
-              <h3 class="font-serif-title font-bold text-lg leading-snug line-clamp-1">${story.title}</h3>
-              <p class="text-xs text-stone-500 mt-0.5">por <span class="font-medium">${story.author}</span></p>
-              <p class="text-xs text-stone-600 mt-2 line-clamp-2 leading-relaxed">${story.summary || ''}</p>
-            </div>
-            <div class="pt-2 border-t border-stone-200/60 flex items-center justify-between text-[11px] text-stone-500">
-              <span>❤️ ${story.likes || 0}</span>
-              <span>📖 ${(story.word_count || 0).toLocaleString()} palabras</span>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // 3. Abrir historia en el lector
-    function openStory(id) {
-      currentStory = allStories.find(s => s.id === id);
-      if (!currentStory) return;
-
-      document.getElementById('reader-cover').src = currentStory.cover || 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=500';
-      document.getElementById('reader-fandom').textContent = currentStory.fandom || 'Original';
-      document.getElementById('reader-title').textContent = currentStory.title;
-      document.getElementById('reader-author').textContent = currentStory.author;
-      document.getElementById('reader-likes').textContent = currentStory.likes || 0;
-      document.getElementById('reader-words').textContent = `${(currentStory.word_count || 0).toLocaleString()} palabras`;
-
-      const tagsBox = document.getElementById('reader-tags');
-      tagsBox.innerHTML = (currentStory.tags || []).map(t =>
-        `<span class="px-2 py-0.5 rounded-md text-[11px] bg-stone-500/10 text-stone-600">#${t}</span>`
-      ).join('');
-
-      const chapter = (currentStory.chapters && currentStory.chapters[0]) || { content: 'Sin contenido.' };
-      document.getElementById('reader-content').textContent = chapter.content;
-
-      const audioBox = document.getElementById('reader-audio-box');
-      const audioEl = document.getElementById('reader-audio');
-      if (chapter.audioUrl) {
-        audioEl.src = chapter.audioUrl;
-        audioBox.classList.remove('hidden');
-      } else {
-        audioEl.pause();
-        audioEl.src = '';
-        audioBox.classList.add('hidden');
-      }
-
-      showView('reader');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    // 4. Subir nueva historia + foto de portada a Supabase
-    async function handlePublish(e) {
-      e.preventDefault();
-      const btn = document.getElementById('submit-btn');
-      btn.disabled = true;
-      btn.textContent = 'Subiendo portada e historia... ⏳';
-
+    // Cargar historias desde Supabase al abrir
+    async function cargarHistorias() {
+      const estadoEl = document.getElementById('estado-carga');
       try {
-        let coverUrl = 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=500';
-        const fileInput = document.getElementById('pub-cover-file');
+        const { data, error } = await db
+          .from('stories')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-        // Si eligieron una imagen desde su galería, la subimos al bucket 'portadas'
-        if (fileInput.files && fileInput.files[0]) {
-          const file = fileInput.files[0];
-          const fileExt = file.name.split('.').pop();
-          const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-          const { error: uploadError } = await db.storage
-            .from('portadas')
-            .upload(fileName, file);
-
-          if (!uploadError) {
-            const { data: publicData } = db.storage.from('portadas').getPublicUrl(fileName);
-            coverUrl = publicData.publicUrl;
-          }
-        }
-
-        const content = document.getElementById('pub-content').value.trim();
-        const wordCount = content.split(/\s+/).filter(Boolean).length;
-        const tags = document.getElementById('pub-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-        const warnings = document.getElementById('pub-warnings').value.split(',').map(w => w.trim()).filter(Boolean);
-
-        const newStory = {
-          title: document.getElementById('pub-title').value.trim(),
-          author: document.getElementById('pub-author').value.trim(),
-          fandom: document.getElementById('pub-fandom').value.trim() || 'Original',
-          tags: tags,
-          warnings: warnings,
-          summary: document.getElementById('pub-summary').value.trim(),
-          cover: coverUrl,
-          word_count: wordCount,
-          likes: 0,
-          chapters: [{
-            number: 1,
-            title: 'Capítulo 1',
-            audioUrl: document.getElementById('pub-audio').value.trim(),
-            content: content
-          }]
-        };
-
-        const { error: insertError } = await db.from('stories').insert([newStory]);
-        if (insertError) throw insertError;
-
-        document.getElementById('publish-form').reset();
-        await loadStories();
-        showView('library');
-        alert('¡Historia publicada con éxito en Tintaverso! ✨');
+        if (error) throw error;
+        todasLasHistorias = data || [];
+        actualizarFiltroFandoms();
+        renderizarBiblioteca(todasLasHistorias);
       } catch (err) {
-        alert('Error al publicar: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Publicar Historia en la Nube ✨';
+        estadoEl.textContent = 'Hubo un detalle al conectar con la biblioteca: ' + err.message;
       }
     }
 
-    // 5. Dar "Me encanta" guardado en la nube
-    async function likeCurrentStory() {
-      if (!currentStory) return;
-      const newLikes = (currentStory.likes || 0) + 1;
-      currentStory.likes = newLikes;
-      document.getElementById('reader-likes').textContent = newLikes;
-
-      await db.from('stories').update({ likes: newLikes }).eq('id', currentStory.id);
-      renderStories();
+    function actualizarFiltroFandoms() {
+      const select = document.getElementById('filtro-fandom');
+      const fandoms = ['Todos', ...new Set(todasLasHistorias.map(h => h.fandom).filter(Boolean))];
+      select.innerHTML = fandoms.map(f => `<option value="${f}">${f === 'Todos' ? 'Todos los Fandoms' : f}</option>`).join('');
     }
 
-    // Navegación y Tema
-    function showView(viewName) {
-      ['library', 'reader', 'publish'].forEach(v => {
-        document.getElementById(`view-${v}`).classList.toggle('hidden', v !== viewName);
+    function renderizarBiblioteca(lista) {
+      const estadoEl = document.getElementById('estado-carga');
+      const gridEl = document.getElementById('grid-historias');
+
+      if (!lista.length) {
+        estadoEl.classList.remove('hidden');
+        estadoEl.textContent = 'Aún no hay historias publicadas con ese filtro. ¡Sé la primera en presionar + Subir Historia!';
+        gridEl.innerHTML = '';
+        return;
+      }
+
+      estadoEl.classList.add('hidden');
+      gridEl.innerHTML = lista.map(h => {
+        const numCaps = Array.isArray(h.chapters) ? h.chapters.length : 1;
+        const tagsHtml = (h.tags || []).slice(0, 3).map(t => `<span class="input-surface border text-[10px] px-2 py-0.5 rounded-md">#${t}</span>`).join('');
+        return `
+          <div onclick="abrirHistoria('${h.id}')" class="card-surface border rounded-2xl p-4 shadow-sm hover:shadow-md transition cursor-pointer flex gap-4">
+            ${h.cover ? `<img src="${h.cover}" alt="${h.title}" class="w-24 h-32 object-cover rounded-xl flex-shrink-0 border border-stone-200">` : `<div class="w-24 h-32 rounded-xl bg-pink-900/10 flex items-center justify-center text-2xl flex-shrink-0">📖</div>`}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2">
+                <span class="badge-bugambilia text-[9px] font-bold uppercase px-2 py-0.5 rounded-full truncate">${h.fandom || 'Original'}</span>
+                <span class="text-[11px] muted-text">❤️ ${h.likes || 0}</span>
+              </div>
+              <h3 class="font-serif-title font-bold text-base mt-1.5 truncate">${h.title}</h3>
+              <p class="text-xs muted-text mb-1.5">Por ${h.author}</p>
+              <p class="text-xs muted-text line-clamp-2 mb-2">${h.summary || ''}</p>
+              <div class="flex flex-wrap items-center gap-1">
+                ${tagsHtml}
+                <span class="text-[10px] font-semibold text-[#9D174D] ml-auto">${numCaps} cap.</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filtrarHistorias() {
+      const texto = document.getElementById('buscador').value.toLowerCase();
+      const fandom = document.getElementById('filtro-fandom').value;
+      const filtradas = todasLasHistorias.filter(h => {
+        const coincideFandom = fandom === 'Todos' || h.fandom === fandom;
+        const coincideTexto = !texto ||
+          (h.title || '').toLowerCase().includes(texto) ||
+          (h.author || '').toLowerCase().includes(texto) ||
+          (h.tags || []).some(t => t.toLowerCase().includes(texto));
+        return coincideFandom && coincideTexto;
       });
+      renderizarBiblioteca(filtradas);
     }
 
-    function cycleTheme() {
-      document.body.classList.remove(themes[currentThemeIndex].id);
-      currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-      const t = themes[currentThemeIndex];
-      document.body.classList.add(t.id);
-      document.getElementById('theme-label').textContent = t.label;
+    function abrirHistoria(id) {
+      historiaActual = todasLasHistorias.find(h => h.id === id);
+      if (!historiaActual) return;
 
-      document.querySelectorAll('[class*="card-"]').forEach(el => {
-        el.classList.remove('card-light', 'card-sepia', 'card-dark');
-        el.classList.add(t.card);
-      });
+      indiceCapituloActual = 0;
+      document.getElementById('vista-biblioteca').classList.add('hidden');
+      document.getElementById('vista-lectura').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      const portadaEl = document.getElementById('lec-portada');
+      if (historiaActual.cover) {
+        portadaEl.src = historiaActual.cover;
+        portadaEl.classList.remove('hidden');
+      } else {
+        portadaEl.classList.add('hidden');
+      }
+
+      document.getElementById('lec-fandom').textContent = historiaActual.fandom || 'Original';
+      document.getElementById('lec-titulo').textContent = historiaActual.title;
+      document.getElementById('lec-autora').textContent = historiaActual.author;
+      document.getElementById('lec-sinopsis').textContent = historiaActual.summary || '';
+      document.getElementById('lec-likes').textContent = historiaActual.likes || 0;
+      document.getElementById('lec-tags').innerHTML = (historiaActual.tags || []).map(t => `<span class="input-surface border text-[11px] px-2.5 py-0.5 rounded-lg">#${t}</span>`).join('');
+
+      actualizarSelectorCapitulos();
+      mostrarCapitulo(0);
     }
 
-    function changeFontSize(delta) {
-      readingFontSize = Math.max(14, Math.min(24, readingFontSize + delta));
-      document.getElementById('reader-content').style.fontSize = readingFontSize + 'px';
+    function actualizarSelectorCapitulos() {
+      const caps = historiaActual.chapters || [];
+      const selector = document.getElementById('selector-capitulo');
+      selector.innerHTML = caps.map((c, idx) => `<option value="${idx}">${c.title || 'Capítulo ' + (idx + 1)}</option>`).join('');
+      selector.value = indiceCapituloActual;
     }
 
-    // Iniciar
-    loadStories();
-  </script>
-</body>
-</html>
+ 
